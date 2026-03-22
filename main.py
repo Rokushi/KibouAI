@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
         try:
             # Ждём слово-триггер
-            if listen_for_trigger("раз"):
+            if listen_for_trigger():
                 speak.say("Что такое?")
                 print("Что такое?")
                 # Основной диалог
