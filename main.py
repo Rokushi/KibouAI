@@ -9,10 +9,6 @@ from vosk import Model, KaldiRecognizer
 from build_vosk_vocab import build_english_folder_list
 from voice_utils import voice_processing, voice_processing_x, ru_model, en_model, stream, p
 
-# original_stderr = os.dup(2)
-# null_fd = os.open(os.devnull, os.O_WRONLY)
-# os.dup2(null_fd, 2)
-
 # Загружаем список английских названий папок
 try:
     with open('english_folder_names.json', 'r', encoding='utf-8') as f:
@@ -153,8 +149,3 @@ if __name__ == '__main__':
     stream.stop_stream()
     stream.close()
     p.terminate()
-    #os.system("for /f \"tokens=5\" %a in ('netstat -ano ^| findstr :8000') do taskkill /F /PID %a 2>nul")
-
-# os.dup2(original_stderr, 2)
-# os.close(null_fd)
-# os.close(original_stderr)
