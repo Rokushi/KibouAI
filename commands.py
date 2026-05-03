@@ -100,7 +100,7 @@ def update_cache(max_age_hours = 48):
 def build_folder_index(max_depth = 30):
     cache = {}
 
-    for drive in ['D:\\','Z:\\','G:\\']:
+    for drive in ['C:\\','D:\\']:
         for root, dirs, _ in os.walk(drive):
             depth = root.count('\\') - drive.count('\\')
             if depth > max_depth:
