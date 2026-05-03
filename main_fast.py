@@ -11,7 +11,7 @@ try:
 except FileNotFoundError:
     english_keywords = build_english_folder_list()
 
-def listen_for_trigger(trigger = "раз"):
+def listen_for_trigger(trigger = "кибо"):
     try:
         while True:
             audio_data = voice_detecting()
