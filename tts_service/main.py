@@ -4,7 +4,6 @@ import requests
 import os
 import atexit
 import pygame
-import io
 
 class DioTTS:
     """Класс для работы с TTS сервисом"""
@@ -23,8 +22,6 @@ class DioTTS:
         server_path = os.path.join(server_dir, "server.py")
         #print(f"[DEBUG] server_path = {server_path}")
         #print(f"[DEBUG] exists? {os.path.exists(server_path)}")
-
-        #os.system("for /f \"tokens=5\" %a in ('netstat -ano ^| findstr :8000') do taskkill /F /PID %a 2>nul")
 
         self.process = subprocess.Popen(
             [python_path, server_path],
@@ -109,3 +106,10 @@ class DioTTS:
 
         with open(save_path, "wb") as f:
             f.write(response.content)
+
+def is_running():
+    try:
+        response = requests.get("http://127.0.0.1:8000/health", timeout=1)
+        return response.status_code == 200
+    except:
+        return False

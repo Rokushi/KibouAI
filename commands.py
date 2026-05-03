@@ -1,13 +1,18 @@
-def update_cache(max_age_hours = 48):
-    if not os.path.exists('folder_cache.json'):
-        build_folder_index()
-        print("===Кэш обновлен===")
-        return
+import datetime
+import json
+import os.path
+import threading
+import time
+import webbrowser
+from voice_utils import voice_processing
+from tts_service.main import is_running
 
-    file_age = time.time() - os.path.getmtime('folder_cache.json')
-    if file_age > max_age_hours * 3600:
-        print("Кэш устарел, обновляю...")
-        build_folder_index()
+if is_running():
+    from tts_service.main import DioTTS
+    speak = DioTTS()
+    say = speak.say
+else:
+    from voice_utils import say
 
 """==========================================[Открыть браузер]=========================================="""
 
@@ -15,37 +20,58 @@ def open_browser(target = ""):
     url = "https://ya.ru/"
     webbrowser.open(url)
     return speak.say('Открываю браузер')
-import datetime
-import json
-import os.path
-import threading
-import time
-import webbrowser
-from tts_service import main
-from main import voice_processing
-speak = main.DioTTS()
 
 """==========================================[Время]=========================================="""
 def show_time():
     hours = {
-        "1": "час", "21": "час",
-        "2": "часа", "3": "часа", "4": "часа", "22": "часа", "23": "часа", "24": "часа",
+        "0": "ноль часов",
+        "1": "один час", "21": "двадцать один час",
+        "2": "два часа", "3": "три часа", "4": "четыре часа",
+        "22": "двадцать два часа", "23": "двадцать три часа",
+        "5": "пять часов", "6": "шесть часов", "7": "семь часов",
+        "8": "восемь часов", "9": "девять часов", "10": "десять часов",
+        "11": "одиннадцать часов", "12": "двенадцать часов",
+        "13": "тринадцать часов", "14": "четырнадцать часов",
+        "15": "пятнадцать часов", "16": "шестнадцать часов",
+        "17": "семнадцать часов", "18": "восемнадцать часов",
+        "19": "девятнадцать часов", "20": "двадцать часов",
+        "24": "двадцать четыре часа"
     }
     minutes = {
-        "1": "1 минута", "21": "21 минута", "31": "31 минута", "41": "41 минута", "51": "51 минута",
-        "2": "2 минуты", "3": "3 минуты", "4": "4 минуты", "22": "22 минуты", "23": "23 минуты", "24": "24 минуты", "32": "32 минуты", "33": "33 минуты", "34": "34 минуты", "42": "42 минуты", "43": "43 минуты", "44": "44 минуты", "52": "52 минуты", "53": "53 минуты", "54": "54 минуты",
+        "0": "ноль минут",
+        "1": "одна минута", "21": "двадцать одна минута",
+        "31": "тридцать одна минута", "41": "сорок одна минута", "51": "пятьдесят одна минута",
+
+        "2": "две минуты", "3": "три минуты", "4": "четыре минуты",
+        "22": "двадцать две минуты", "23": "двадцать три минуты", "24": "двадцать четыре минуты",
+        "32": "тридцать две минуты", "33": "тридцать три минуты", "34": "тридцать четыре минуты",
+        "42": "сорок две минуты", "43": "сорок три минуты", "44": "сорок четыре минуты",
+        "52": "пятьдесят две минуты", "53": "пятьдесят три минуты", "54": "пятьдесят четыре минуты",
+
+        "5": "пять минут", "6": "шесть минут", "7": "семь минут",
+        "8": "восемь минут", "9": "девять минут", "10": "десять минут",
+        "11": "одиннадцать минут", "12": "двенадцать минут",
+        "13": "тринадцать минут", "14": "четырнадцать минут",
+        "15": "пятнадцать минут", "16": "шестнадцать минут",
+        "17": "семнадцать минут", "18": "восемнадцать минут",
+        "19": "девятнадцать минут", "20": "двадцать минут",
+        "25": "двадцать пять минут", "26": "двадцать шесть минут",
+        "27": "двадцать семь минут", "28": "двадцать восемь минут",
+        "29": "двадцать девять минут", "30": "тридцать минут",
+        "35": "тридцать пять минут", "36": "тридцать шесть минут",
+        "37": "тридцать семь минут", "38": "тридцать восемь минут",
+        "39": "тридцать девять минут", "40": "сорок минут",
+        "45": "сорок пять минут", "46": "сорок шесть минут",
+        "47": "сорок семь минут", "48": "сорок восемь минут",
+        "49": "сорок девять минут", "50": "пятьдесят минут",
+        "55": "пятьдесят пять минут", "56": "пятьдесят шесть минут",
+        "57": "пятьдесят семь минут", "58": "пятьдесят восемь минут",
+        "59": "пятьдесят девять минут"
     }
-    h = datetime.datetime.now().strftime("%H")
-    m = datetime.datetime.now().strftime("%M")
-    print(f"{h}-{m}")
-    if h in hours and m in minutes:
-        speak.say(f'Сейчас {hours[h]} {minutes[m]}')
-    elif h in hours:
-        speak.say(f'Сейчас {hours[h]} {m} минут')
-    elif m in minutes:
-        speak.say(f'Сейчас {h} часов {minutes[m]}')
-    else:
-        speak.say(f'Сейчас {h} часов {m} минут')
+    h = datetime.datetime.now().strftime("%H").lstrip("0") or "0"
+    m = datetime.datetime.now().strftime("%M").lstrip("0") or "0"
+    print(f"{h}:{m}")
+    say(f'Сейчас {hours[h]} {minutes[m]}')
 
 """==========================================[Открыть папку]=========================================="""
 def open_folder(folder_name = ""):
@@ -56,9 +82,20 @@ def open_folder(folder_name = ""):
     found_path = find_folder_cache(folder_name)
     if found_path:
         os.startfile(found_path)
-        return speak.say(f'Открываю {folder_name}')
+        return say(f'Открываю {folder_name}')
     else:
-        return speak.say(f'Папку "{folder_name}" не нашёл')
+        return say(f'Папку "{folder_name}" не нашёл')
+
+def update_cache(max_age_hours = 48):
+    if not os.path.exists('folder_cache.json'):
+        build_folder_index()
+        print("===Кэш обновлен===")
+        return
+
+    file_age = time.time() - os.path.getmtime('folder_cache.json')
+    if file_age > max_age_hours * 3600:
+        print("Кэш устарел, обновляю...")
+        build_folder_index()
 
 def build_folder_index(max_depth = 30):
     cache = {}
@@ -111,7 +148,7 @@ def select_folder(paths, folder_name):
 
     # print(paths)
     print(message.split(' '))
-    speak.say(message)
+    say(message)
 
     while True:
         response = voice_processing(chunk_multiplier=5)
@@ -142,16 +179,11 @@ def select_folder(paths, folder_name):
                 print(paths[num - 1])
                 return paths[num - 1]
 
-# commands = {"привет": "Привет, меня зовут Kibou",
-#             "как дела": "У меня все хорошо. Спасибо, что спросили",
-#             "врем": f'Сейчас {datetime.datetime.now().strftime("%H:%M")}',
-#             "час": time(),
-#             "пока": "До скорого"}
 """==========================================[Таймер]=========================================="""
 def timer_worker(seconds):
     time.sleep(seconds)
     print("Время вышло")
-    return speak.say("Время возобновило ход")
+    return say("Время вышло")
 
 
 def parse_time(text):
@@ -206,7 +238,7 @@ def timer(seconds):
         #seconds = parse_time(text)
         print(f"Таймер на: {seconds} секунд")
         thread = threading.Thread(target=timer_worker, args=(seconds,))
-        speak.say("Время остановилось")
+        say("Время остановилось")
         thread.start()
     except:
         return print("Ошибка")

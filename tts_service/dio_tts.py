@@ -20,7 +20,6 @@ for dll_dir in possible_dirs:
         os.add_dll_directory(dll_dir)
         print(f"Добавлен путь к DLL: {dll_dir}")
 import torch
-import torchaudio
 from TTS.tts.configs.xtts_config import XttsConfig
 from TTS.tts.models.xtts import Xtts
 

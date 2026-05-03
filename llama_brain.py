@@ -1,4 +1,3 @@
-import os
 import ollama
 import json
 from pathlib import Path
